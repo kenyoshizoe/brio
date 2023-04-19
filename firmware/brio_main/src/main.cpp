@@ -1,9 +1,15 @@
 #include <Arduino.h>
 
+#include "brio/pin_assign.hpp"
+
 void setup() {
-  // put your setup code here, to run once:
+  Serial.begin(115200);
+  delay(1000);
+  tone(brio::pin_assign::kSpeeker, 3000);
+  delay(200);
+  tone(brio::pin_assign::kSpeeker, 3000);
+  delay(200);
+  noTone(brio::pin_assign::kSpeeker);
 }
 
-void loop() {
-  // put your main code here, to run repeatedly:
-}
+void loop() {}
