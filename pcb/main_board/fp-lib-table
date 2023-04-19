@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "A4988_STEPPER_MOTOR_DRIVER_CARRIER")(type "KiCad")(uri "${KIPRJMOD}/../lib/A4988_STEPPER_MOTOR_DRIVER_CARRIER.pretty")(options "")(descr ""))
+  (lib (name "brio")(type "KiCad")(uri "${KIPRJMOD}/../lib/brio.pretty")(options "")(descr ""))
+)
