@@ -57,30 +57,30 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define stepper_reset_Pin GPIO_PIN_0
-#define stepper_reset_GPIO_Port GPIOA
-#define stepper_dir3_Pin GPIO_PIN_1
-#define stepper_dir3_GPIO_Port GPIOA
-#define stepper_step3_Pin GPIO_PIN_2
-#define stepper_step3_GPIO_Port GPIOA
-#define sens_in3_Pin GPIO_PIN_3
-#define sens_in3_GPIO_Port GPIOA
-#define stepper_dir2_Pin GPIO_PIN_4
-#define stepper_dir2_GPIO_Port GPIOA
-#define stepper_step2_Pin GPIO_PIN_5
-#define stepper_step2_GPIO_Port GPIOA
-#define sens_in2_Pin GPIO_PIN_6
-#define sens_in2_GPIO_Port GPIOA
-#define stepper_dir1_Pin GPIO_PIN_7
-#define stepper_dir1_GPIO_Port GPIOA
-#define stepper_step1_Pin GPIO_PIN_0
-#define stepper_step1_GPIO_Port GPIOB
-#define sens_in1_Pin GPIO_PIN_1
-#define sens_in1_GPIO_Port GPIOB
-#define sleep_Pin GPIO_PIN_8
-#define sleep_GPIO_Port GPIOA
-#define emg_Pin GPIO_PIN_11
-#define emg_GPIO_Port GPIOA
+#define STEPPER_RESET_Pin GPIO_PIN_0
+#define STEPPER_RESET_GPIO_Port GPIOA
+#define STEPPER3_DIR_Pin GPIO_PIN_1
+#define STEPPER3_DIR_GPIO_Port GPIOA
+#define STEPPER3_STEP_Pin GPIO_PIN_2
+#define STEPPER3_STEP_GPIO_Port GPIOA
+#define STEPPER3_SENS_Pin GPIO_PIN_3
+#define STEPPER3_SENS_GPIO_Port GPIOA
+#define STEPPER2_DIR_Pin GPIO_PIN_4
+#define STEPPER2_DIR_GPIO_Port GPIOA
+#define STEPPER2_STEP_Pin GPIO_PIN_5
+#define STEPPER2_STEP_GPIO_Port GPIOA
+#define STEPPER2_SENS_Pin GPIO_PIN_6
+#define STEPPER2_SENS_GPIO_Port GPIOA
+#define STEPPER1_DIR_Pin GPIO_PIN_7
+#define STEPPER1_DIR_GPIO_Port GPIOA
+#define STEPPER1_STEP_Pin GPIO_PIN_0
+#define STEPPER1_STEP_GPIO_Port GPIOB
+#define STEPPER1_SENS_Pin GPIO_PIN_1
+#define STEPPER1_SENS_GPIO_Port GPIOB
+#define STEPPER_SLEEP_Pin GPIO_PIN_8
+#define STEPPER_SLEEP_GPIO_Port GPIOA
+#define STEPPER_EMG_Pin GPIO_PIN_11
+#define STEPPER_EMG_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 

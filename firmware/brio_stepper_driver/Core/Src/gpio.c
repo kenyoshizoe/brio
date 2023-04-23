@@ -50,39 +50,35 @@ void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, stepper_reset_Pin|stepper_dir3_Pin|stepper_step3_Pin|stepper_dir2_Pin
-                          |stepper_step2_Pin|stepper_dir1_Pin|sleep_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(stepper_step1_GPIO_Port, stepper_step1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, STEPPER_RESET_Pin|STEPPER3_DIR_Pin|STEPPER2_DIR_Pin|STEPPER1_DIR_Pin
+                          |STEPPER_SLEEP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PAPin PAPin PAPin PAPin
-                           PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = stepper_reset_Pin|stepper_dir3_Pin|stepper_step3_Pin|stepper_dir2_Pin
-                          |stepper_step2_Pin|stepper_dir1_Pin|sleep_Pin;
+                           PAPin */
+  GPIO_InitStruct.Pin = STEPPER_RESET_Pin|STEPPER3_DIR_Pin|STEPPER2_DIR_Pin|STEPPER1_DIR_Pin
+                          |STEPPER_SLEEP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PAPin PAPin PAPin */
-  GPIO_InitStruct.Pin = sens_in3_Pin|sens_in2_Pin|emg_Pin;
+  /*Configure GPIO pins : PAPin PAPin */
+  GPIO_InitStruct.Pin = STEPPER3_SENS_Pin|STEPPER2_SENS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = stepper_step1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(stepper_step1_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PtPin */
-  GPIO_InitStruct.Pin = sens_in1_Pin;
+  GPIO_InitStruct.Pin = STEPPER1_SENS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(sens_in1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(STEPPER1_SENS_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PtPin */
+  GPIO_InitStruct.Pin = STEPPER_EMG_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  HAL_GPIO_Init(STEPPER_EMG_GPIO_Port, &GPIO_InitStruct);
 
 }
 
