@@ -1642,7 +1642,6 @@
     )
   )
 
-
   (junction (at 238.76 106.68) (diameter 0) (color 0 0 0 0)
     (uuid 16ca2ba7-e874-47c5-a906-d7efb2cafa2f)
   )
@@ -3316,7 +3315,7 @@
     (in_bom yes) (on_board yes)
     (uuid aa628ee5-291d-4a0e-86c0-0a04bb77c9c5)
     (property "Reference" "R1" (id 0) (at 66.04 124.46 90))
-    (property "Value" "22" (id 1) (at 71.12 124.46 90))
+    (property "Value" "5.1k" (id 1) (at 71.12 124.46 90))
     (property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" (id 2) (at 68.58 128.778 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -3481,7 +3480,7 @@
     (in_bom yes) (on_board yes)
     (uuid c7956de3-26d5-4326-9484-da88d706f41b)
     (property "Reference" "R2" (id 0) (at 66.04 132.08 90))
-    (property "Value" "22" (id 1) (at 71.12 132.08 90))
+    (property "Value" "5.1k" (id 1) (at 71.12 132.08 90))
     (property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder" (id 2) (at 68.58 131.318 90)
       (effects (font (size 1.27 1.27)) hide)
     )
@@ -4001,10 +4000,10 @@
       (reference "Q2") (unit 1) (value "2SC3325-Y,LF") (footprint "2SC3325YLF")
     )
     (path "/aa628ee5-291d-4a0e-86c0-0a04bb77c9c5"
-      (reference "R1") (unit 1) (value "22") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R1") (unit 1) (value "5.1k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/c7956de3-26d5-4326-9484-da88d706f41b"
-      (reference "R2") (unit 1) (value "22") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
+      (reference "R2") (unit 1) (value "5.1k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
     )
     (path "/a022f822-b54d-4c77-b17b-50bdc04b2840"
       (reference "R3") (unit 1) (value "10k") (footprint "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder")
