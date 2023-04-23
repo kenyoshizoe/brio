@@ -64,7 +64,9 @@ Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c \
 Drivers/STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c \
-Core/Src/system_stm32f3xx.c
+Core/Src/system_stm32f3xx.c \
+$(wildcard lib/RTT/RTT/*.c) \
+$(wildcard lib/RTT/Syscalls/*.c)
 
 # ASM sources
 ASM_SOURCES =  \
@@ -125,8 +127,9 @@ C_INCLUDES =  \
 -IDrivers/STM32F3xx_HAL_Driver/Inc \
 -IDrivers/STM32F3xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F3xx/Include \
--IDrivers/CMSIS/Include
-
+-IDrivers/CMSIS/Include \
+-Ilib/RTT/RTT \
+-Ilib/RTT/Config
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
