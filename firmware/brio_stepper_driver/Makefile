@@ -68,7 +68,7 @@ $(wildcard lib/RTT/Syscalls/*.c)
 
 CXX_SOURCES = \
 $(wildcard src/*.cc) \
-$(wildcard src/**/*.cpp)
+$(wildcard src/**/*.cc)
 
 # ASM sources
 ASM_SOURCES =  \
@@ -121,6 +121,8 @@ C_DEFS =  \
 -DUSE_HAL_DRIVER \
 -DSTM32F303x8
 
+# C++ defines
+CXX_DEFS = $(C_DEFS)
 
 # AS includes
 AS_INCLUDES = 
@@ -145,7 +147,6 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 
 CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
-CXXFLAGS = $(MCU) $(CXX_DEFS) $(CXX_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -g -gdwarf-2
@@ -155,6 +156,8 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
+# compile g++ flags
+CXXFLAGS = $(MCU) $(CXX_DEFS) $(CXX_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 #######################################
 # LDFLAGS
@@ -165,7 +168,7 @@ LDSCRIPT = STM32F303K8Tx_FLASH.ld
 # libraries
 LIBS = -lc -lm -lnosys -lstdc++
 LIBDIR = 
-LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections
+LDFLAGS = $(MCU) -specs=nano.specs -T$(LDSCRIPT) $(LIBDIR) $(LIBS) -Wl,-Map=$(BUILD_DIR)/$(TARGET).map,--cref -Wl,--gc-sections -Wl,--print-memory-usage -u _printf_float
 
 # default action: build all
 all: $(BUILD_DIR)/$(TARGET).elf $(BUILD_DIR)/$(TARGET).hex $(BUILD_DIR)/$(TARGET).bin
