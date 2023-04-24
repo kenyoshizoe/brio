@@ -7,9 +7,11 @@
 #define BRIO_A4988_H_
 
 #include <algorithm>
+#include <cmath>
 
 #include "main.h"
-#include "math.h"
+
+constexpr double kPI = 3.141592653589793;
 
 namespace brio {
 /**
@@ -32,7 +34,7 @@ class A4988 {
    */
   void SetInitialSpeed(float initial_speed) {
     initial_speed_ =
-        initial_speed * motor_steps_ * microstep_ * gear_ratio_ / 2 / M_PI;
+        initial_speed * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
   }
   /**
    * @brief Set acceleration
