@@ -43,14 +43,17 @@ void A4988::Run(float rad, float speed) {
     rotate_forward_ = false;
   }
   // Calculate target step count
-  int64_t step_diff = rad * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
-  step_count_target_ = step_count_ + step_diff;
   step_count_target_ =
-      std::clamp((int64_t)step_count_target_, (int64_t)0, max_step_count_);
+      step_count_ + rad * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
+  step_count_target_ = std::clamp((int64_t)step_count_target_, (int64_t)0,
+                                  (int64_t)max_step_count_);
+  if (step_count_target_ == step_count_) {
+    return;
+  }
   // Calculate max speed
   max_speed_ = std::min(
       (float)(speed * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI),
-      std::sqrt(std::abs(step_diff) * accel_ +
+      std::sqrt(std::abs(step_count_target_ - step_count_) * accel_ +
                 initial_speed_ * initial_speed_));
   SEGGER_RTT_printf(0, "max_spped: %d\n", (int)max_speed_ * 10);
   // Calculate initial period

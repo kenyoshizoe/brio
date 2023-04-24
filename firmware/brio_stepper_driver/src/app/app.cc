@@ -28,7 +28,7 @@ void MainTask() {
                              STEPPER2_SENS_GPIO_Port, STEPPER2_SENS_Pin, &htim2,
                              TIM_CHANNEL_1);
   stepper2->SetMicrostep(4);
-  stepper2->SetMaxStepCount(24000);
+  stepper2->SetMaxStepCount(18000);
   stepper3 = new brio::A4988(STEPPER3_STEP_GPIO_Port, STEPPER3_STEP_Pin,
                              STEPPER3_DIR_GPIO_Port, STEPPER3_DIR_Pin,
                              STEPPER3_SENS_GPIO_Port, STEPPER3_SENS_Pin,
@@ -65,11 +65,11 @@ void MainTask() {
 
     if (input == '1') {
       SEGGER_RTT_printf(0, "Stepper motor 2 CW.\r\n");
-      stepper2->Run(10 * kPI, 8 * kPI);
+      stepper2->Run(4 * kPI, 8 * kPI);
     }
     if (input == '2') {
       SEGGER_RTT_printf(0, "Stepper motor 2 CCW.\r\n");
-      stepper2->Run(-10 * kPI, 8 * kPI);
+      stepper2->Run(-4 * kPI, 8 * kPI);
     }
   }
 }
