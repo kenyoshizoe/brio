@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "type": "shell",
+    "echoCommand": true,
+    "tasks": [
+        {
+            "label": "Build project",
+            "command": "make",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Clean project",
+            "command": "powershell -Command Remove-Item",
+            "args": [
+                "${workspaceFolder}/build",
+                "-Recurse"
+            ],
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": "build"
+        }
+    ]
+}
