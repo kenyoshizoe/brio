@@ -26,8 +26,8 @@ class A4988 {
         uint16_t dir_pin, GPIO_TypeDef *sens_port, uint16_t sens_pin,
         TIM_HandleTypeDef *timer, uint64_t timer_channel);
 
-  void SetMotorSteps(int motor_steps) { motor_steps_ = motor_steps; }
-  void SetMicrostep(int microstep) { microstep_ = microstep; }
+  void SetMotorSteps(uint16_t motor_steps) { motor_steps_ = motor_steps; }
+  void SetMicrostep(uint8_t microstep) { microstep_ = microstep; }
   /**
    * @brief Set initial speed
    * @param initial_speed initial speed in rad/s
@@ -41,15 +41,19 @@ class A4988 {
    * @param accel acceleration in rad/s^2
    */
   void SetAccel(float accel) { accel_ = accel; }
+  void SetMaxStepCount(int64_t max_step_count) {
+    max_step_count_ = max_step_count;
+  }
   /**
    * @brief Reverse direction of rotation
    */
   void SetReverse(bool reverse) { reverse_direction_ = reverse; }
-  void SetGearRatio(int gear_ratio) { gear_ratio_ = gear_ratio; }
+  void SetGearRatio(uint8_t gear_ratio) { gear_ratio_ = gear_ratio; }
   /**
    * @brief Reverse origin sensor signal
    */
   void SetSensReverse(bool reverse_sens) { reverse_sens_ = reverse_sens; }
+  int64_t GetStepCount() { return step_count_; }
   /**
    * @brief Return stepper is running or not
    */
@@ -91,12 +95,13 @@ class A4988 {
   TIM_HandleTypeDef *timer_;
   uint64_t timer_channel_;
   // Parameters
-  int motor_steps_ = 400;      // pulse/rev
-  int microstep_ = 1;          // based on ms1 ms2 ms3
+  uint16_t motor_steps_ = 400;  // pulse/rev
+  uint8_t microstep_ = 1;       // based on ms1 ms2 ms3
   float initial_speed_ = 1600;  // pulse/s
   float accel_ = 3200;          // pulse/s^2
+  int64_t max_step_count_ = 0;  // pulse
   bool reverse_direction_ = false;
-  int gear_ratio_ = 1;
+  uint8_t gear_ratio_ = 1;
   bool reverse_sens_ = false;
   // State
   enum class State { kIdle, kAccel, kDecel, kCruise } state_ = State::kIdle;
