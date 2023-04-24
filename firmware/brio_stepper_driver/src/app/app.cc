@@ -55,18 +55,22 @@ void MainTask() {
   HAL_Delay(1000);
 
   while (true) {
-    SEGGER_RTT_printf(0, "Stepper motor 2 CW.\r\n");
-    stepper2->Run(20 * M_PI, 8 * M_PI);
-    while (stepper2->IsRunning()) {
-      HAL_Delay(1);
+    if (stepper2->IsRunning()) {
+      continue;
     }
-    HAL_Delay(1000);
-    SEGGER_RTT_printf(0, "Stepper motor 2 CCW.\r\n");
-    stepper2->Run(-20 * M_PI, 8 * M_PI);
-    while (stepper2->IsRunning()) {
-      HAL_Delay(1);
+    int input = SEGGER_RTT_GetKey();
+    if (input < 0) {
+      continue;
     }
-    HAL_Delay(1000);
+
+    if (input == '1') {
+      SEGGER_RTT_printf(0, "Stepper motor 2 CW.\r\n");
+      stepper2->Run(10 * kPI, 8 * kPI);
+    }
+    if (input == '2') {
+      SEGGER_RTT_printf(0, "Stepper motor 2 CCW.\r\n");
+      stepper2->Run(-10 * kPI, 8 * kPI);
+    }
   }
 }
 
