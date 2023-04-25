@@ -75,51 +75,30 @@ void A4988::Run(float rad, float speed) {
 void A4988::Update() {
   if (state_ == State::kIdle) {
     return;
-  }
-
-  // Calculate new period
-  float dt = 1.0f / kUpdateHz;
-
-  if (state_ == State::kAccel) {
-    current_speed_ = current_speed_ + accel_ * dt;
+  } else if (state_ == State::kAccel) {
+    current_speed_ += accel_ / kUpdateHz;
     if (current_speed_ > max_speed_) {
       current_speed_ = max_speed_;
       state_ = State::kCruise;
     }
-    uint32_t period = (uint32_t)(kBaseFreq / current_speed_);
-    __HAL_TIM_SET_AUTORELOAD(timer_, period);
-    __HAL_TIM_SET_COMPARE(timer_, timer_channel_, period / 2);
-
-    SEGGER_RTT_printf(0, "kAccel: %u / %u\n", period,
-                      (uint32_t)(kBaseFreq / max_speed_));
   } else if (state_ == State::kDecel) {
-    current_speed_ = current_speed_ - accel_ * dt;
+    // Calculate new period
+    current_speed_ -= accel_ / kUpdateHz;
     if (current_speed_ < initial_speed_) {
       current_speed_ = initial_speed_;
     }
-    uint32_t period = (uint32_t)(kBaseFreq / current_speed_);
-    // Set period
-    __HAL_TIM_SET_AUTORELOAD(timer_, period);
-    // Set duty cycle
-    __HAL_TIM_SET_COMPARE(timer_, timer_channel_, period / 2);
-
-    SEGGER_RTT_printf(0, "kDecel: %u / %u\n", period,
-                      (uint32_t)(kBaseFreq / max_speed_));
   } else if (state_ == State::kCruise) {
+    current_speed_ = max_speed_;
     if (abs(step_count_target_ - step_count_) <=
         (max_speed_ * max_speed_ - initial_speed_ * initial_speed_) / accel_ /
             2) {
       state_ = State::kDecel;
     }
-    uint32_t period = (uint32_t)(kBaseFreq / max_speed_);
-    // Set period
-    __HAL_TIM_SET_AUTORELOAD(timer_, period);
-    // Set duty cycle
-    __HAL_TIM_SET_COMPARE(timer_, timer_channel_, period / 2);
-
-    SEGGER_RTT_printf(0, "kCruise: %u / %u\n", period,
-                      (uint32_t)(kBaseFreq / max_speed_));
   }
+
+  uint32_t period = (uint32_t)(kBaseFreq / current_speed_);
+  __HAL_TIM_SET_AUTORELOAD(timer_, period);
+  __HAL_TIM_SET_COMPARE(timer_, timer_channel_, period / 2);
 }
 
 void A4988::PWMPulseFinishedCallback() {
