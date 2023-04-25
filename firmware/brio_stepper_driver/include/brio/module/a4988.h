@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
 #include "main.h"
 
@@ -49,8 +50,19 @@ class A4988 {
    * @param accel acceleration in rad/s^2
    */
   void SetAccel(float accel) { accel_ = Rad2Pulse(accel); }
-  void SetMaxStepCount(int64_t max_step_count) {
-    max_step_count_ = max_step_count;
+  /**
+   * @brief Set min step count
+   * @param min_step_count min step count in pulse
+   */
+  void SetMinRad(float min_rad) {
+    min_step_count_ = std::min((int64_t)Rad2Pulse(min_rad), max_step_count_);
+  }
+  /**
+   * @brief Set max step count
+   * @param max_step_count max step count in pulse
+   */
+  void SetMaxRad(float max_rad) {
+    max_step_count_ = std::max((int64_t)Rad2Pulse(max_rad), min_step_count_);
   }
   /**
    * @brief Reverse direction of rotation
@@ -119,7 +131,8 @@ class A4988 {
   float initial_speed_ = 1600;  // pulse/s
   float default_speed_ = 6400;  // pulse/s
   float accel_ = 3200;          // pulse/s^2
-  int64_t max_step_count_ = 0;  // pulse
+  int64_t max_step_count_ = std::numeric_limits<int64_t>::min();  // pulse
+  int64_t min_step_count_ = std::numeric_limits<int64_t>::max();  // pulse
   bool reverse_direction_ = false;
   uint8_t gear_ratio_ = 1;
   bool reverse_sens_ = false;
