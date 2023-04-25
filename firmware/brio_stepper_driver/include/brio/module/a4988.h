@@ -10,9 +10,8 @@
 #include <cmath>
 #include <limits>
 
+#include "brio/util/utils.h"
 #include "main.h"
-
-constexpr double kPI = 3.141592653589793;
 
 namespace brio {
 /**
