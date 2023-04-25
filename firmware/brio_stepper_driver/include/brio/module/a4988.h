@@ -115,6 +115,13 @@ class A4988 {
   volatile float current_speed_ = 0;  // pulse/s
   volatile int64_t step_count_ = 0;
   volatile int64_t step_count_target_ = 0;
+
+  float Pulse2Rad(int pulse) {
+    return pulse * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);
+  }
+  float Rad2Pulse(float rad) {
+    return rad * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
+  }
 };
 }  // namespace brio
 #endif  // BRIO_A4988_H_
