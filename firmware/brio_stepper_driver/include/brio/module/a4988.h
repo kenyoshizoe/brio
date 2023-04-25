@@ -79,11 +79,16 @@ class A4988 {
    */
   void ReturnToOrigin();
   /**
+   * @brief Move stepper motor to specified angle
+   * @param rad angle in rad
+   */
+  void MoveTo(float rad, float speed = -1);
+  /**
    * @brief Run stepper motor with const acceleration
    * @param rad angle in rad
    * @param speed max speed in rad/s
    */
-  void Run(float rad, float speed);
+  void Run(float rad, float speed = -1);
   /**
    * @brief Update state of stepper motor
    * @note Call this function in HAL_TIM_PeriodElapsedCallback
