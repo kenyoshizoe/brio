@@ -39,7 +39,7 @@ void A4988::MoveTo(float rad, float speed) {
   // Calculate target step count
   step_count_target_ = Rad2Pulse(rad);
   step_count_target_ =
-      std::clamp((int64_t)step_count_target_, min_step_count_, max_step_count_);
+      std::clamp((int32_t)step_count_target_, min_step_count_, max_step_count_);
   if (step_count_target_ == step_count_) {
     return;
   }

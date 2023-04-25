@@ -54,14 +54,14 @@ class A4988 {
    * @param min_step_count min step count in pulse
    */
   void SetMinRad(float min_rad) {
-    min_step_count_ = std::min((int64_t)Rad2Pulse(min_rad), max_step_count_);
+    min_step_count_ = std::min((int32_t)Rad2Pulse(min_rad), max_step_count_);
   }
   /**
    * @brief Set max step count
    * @param max_step_count max step count in pulse
    */
   void SetMaxRad(float max_rad) {
-    max_step_count_ = std::max((int64_t)Rad2Pulse(max_rad), min_step_count_);
+    max_step_count_ = std::max((int32_t)Rad2Pulse(max_rad), min_step_count_);
   }
   /**
    * @brief Reverse direction of rotation
@@ -130,8 +130,8 @@ class A4988 {
   float initial_speed_ = 1600;  // pulse/s
   float default_speed_ = 6400;  // pulse/s
   float accel_ = 3200;          // pulse/s^2
-  int64_t max_step_count_ = std::numeric_limits<int64_t>::min();  // pulse
-  int64_t min_step_count_ = std::numeric_limits<int64_t>::max();  // pulse
+  int32_t max_step_count_ = std::numeric_limits<int32_t>::max();  // pulse
+  int32_t min_step_count_ = std::numeric_limits<int32_t>::min();  // pulse
   bool reverse_direction_ = false;
   uint8_t gear_ratio_ = 1;
   bool reverse_sens_ = false;
@@ -145,8 +145,8 @@ class A4988 {
   volatile bool rotate_forward_ = false;
   volatile float max_speed_ = 0;      // pulse/s
   volatile float current_speed_ = 0;  // pulse/s
-  volatile int64_t step_count_ = 0;
-  volatile int64_t step_count_target_ = 0;
+  volatile int32_t step_count_ = 0;
+  volatile int32_t step_count_target_ = 0;
 
   float Pulse2Rad(int pulse) {
     return pulse * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);
