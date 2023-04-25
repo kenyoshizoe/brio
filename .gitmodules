@@ -1,3 +1,6 @@
 [submodule "firmware/brio_stepper_driver/lib/RTT"]
 	path = firmware/brio_stepper_driver/lib/RTT
 	url = https://github.com/SEGGERMicro/RTT.git
+[submodule "firmware/brio_stepper_driver/lib/etl"]
+	path = firmware/brio_stepper_driver/lib/etl
+	url = https://github.com/ETLCPP/etl.git

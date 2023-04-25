@@ -140,7 +140,8 @@ C_INCLUDES =  \
 
 CXX_INCLUDES = \
 $(C_INCLUDES) \
--Iinclude
+-Iinclude \
+-Ilib/etl/include
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections

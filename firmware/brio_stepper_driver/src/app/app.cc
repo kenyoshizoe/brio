@@ -1,12 +1,15 @@
 #include "brio/app/app.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 
 // C includes
 #include "SEGGER_RTT.h"
 #include "tim.h"
 // C++ includes
 #include "brio/module/a4988.h"
+#include "brio/util/utils.h"
+#include "etl/queue.h"
 
 // Stepper motor
 brio::A4988* stepper1;
@@ -28,7 +31,10 @@ void MainTask() {
                              STEPPER2_SENS_GPIO_Port, STEPPER2_SENS_Pin, &htim2,
                              TIM_CHANNEL_1);
   stepper2->SetMicrostep(4);
-  stepper2->SetMaxStepCount(18000);
+  stepper2->SetDefaultSpeed(12 * brio::kPI);
+  stepper2->SetAccel(10 * brio::kPI);
+  stepper2->SetMinRad(0);
+  stepper2->SetMaxRad(40 * brio::kPI);
   stepper3 = new brio::A4988(STEPPER3_STEP_GPIO_Port, STEPPER3_STEP_Pin,
                              STEPPER3_DIR_GPIO_Port, STEPPER3_DIR_Pin,
                              STEPPER3_SENS_GPIO_Port, STEPPER3_SENS_Pin,
@@ -50,26 +56,54 @@ void MainTask() {
   SEGGER_RTT_printf(0, "Stepper motor 2 return to origin...");
   stepper2->ReturnToOrigin();
   SEGGER_RTT_printf(0, "done.\r\n");
-  stepper2->Run(4 * kPI, 8 * kPI);
+  stepper2->MoveTo(4 * brio::kPI, 8 * brio::kPI);
 
   HAL_Delay(1000);
+
+  etl::queue<char, 256> cmd_queue;
+  cmd_queue.clear();
 
   while (true) {
     if (stepper2->IsRunning()) {
       continue;
     }
+
     int input = SEGGER_RTT_GetKey();
     if (input < 0) {
       continue;
     }
-
-    if (input == '1') {
-      SEGGER_RTT_printf(0, "Stepper motor 2 CW.\r\n");
-      stepper2->Run(4 * kPI, 8 * kPI);
+    if (cmd_queue.full()) {
+      cmd_queue.pop();
     }
-    if (input == '2') {
-      SEGGER_RTT_printf(0, "Stepper motor 2 CCW.\r\n");
-      stepper2->Run(-4 * kPI, 8 * kPI);
+    cmd_queue.push(input);
+
+    if (cmd_queue.back() == ';') {
+      char cmd = cmd_queue.front();
+      cmd_queue.pop();
+      char value_char[256] = "";
+      for (int i = 0; i < cmd_queue.size() - 1; i++) {
+        strcat(value_char, &cmd_queue.front());
+        cmd_queue.pop();
+      }
+      int value = atoi(value_char);
+      cmd_queue.clear();
+      SEGGER_RTT_printf(0, "Command: %c, Value: %d\r\n", cmd, value);
+
+      if (cmd == 'm') {
+        // Move to
+        stepper2->MoveTo(value * brio::kPI);
+      }
+      if (cmd == 's') {
+        // Set speed
+        stepper2->SetDefaultSpeed(value * brio::kPI);
+      }
+      if (cmd == 'a') {
+        // Acceleration
+        stepper2->SetAccel(value * brio::kPI);
+      }
+      if (cmd == 'r') {
+        HAL_NVIC_SystemReset();
+      }
     }
   }
 }
