@@ -34,7 +34,7 @@ class A4988 {
    */
   void SetInitialSpeed(float initial_speed) {
     initial_speed_ =
-        Rad2Pulse(std::clamp(initial_speed, 0.0f, (float)max_speed_));
+        Rad2Pulse(std::max(initial_speed, 0.0f));
   }
   /**
    * @brief Set default speed
@@ -42,7 +42,7 @@ class A4988 {
    */
   void SetDefaultSpeed(float default_speed) {
     default_speed_ =
-        Rad2Pulse(std::clamp(default_speed, 0.0f, (float)max_speed_));
+        Rad2Pulse(std::max(default_speed, 0.0f));
   }
   /**
    * @brief Set acceleration
@@ -133,7 +133,7 @@ class A4988 {
   int32_t max_step_count_ = std::numeric_limits<int32_t>::max();  // pulse
   int32_t min_step_count_ = std::numeric_limits<int32_t>::min();  // pulse
   bool reverse_direction_ = false;
-  uint8_t gear_ratio_ = 1;
+  float gear_ratio_ = 1;
   bool reverse_sens_ = false;
   // State
   volatile enum class State {

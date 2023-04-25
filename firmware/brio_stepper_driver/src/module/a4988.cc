@@ -30,6 +30,7 @@ void A4988::ReturnToOrigin() {
 }
 
 void A4988::MoveTo(float rad, float speed) {
+  speed = Rad2Pulse(speed);
   if (speed < 0) {
     speed = default_speed_;
   }
@@ -45,7 +46,7 @@ void A4988::MoveTo(float rad, float speed) {
   }
   // Calculate max speed
   max_speed_ =
-      std::min(Rad2Pulse(speed),
+      std::min(speed,
                std::sqrt(std::abs(step_count_target_ - step_count_) * accel_ +
                          initial_speed_ * initial_speed_));
   // Calculate period
@@ -84,7 +85,6 @@ void A4988::Update() {
       state_ = State::kCruise;
     }
   } else if (state_ == State::kDecel) {
-    // Calculate new period
     current_speed_ -= accel_ / kUpdateHz;
     if (current_speed_ < initial_speed_) {
       current_speed_ = initial_speed_;
@@ -97,7 +97,6 @@ void A4988::Update() {
       state_ = State::kDecel;
     }
   }
-
   uint32_t period = (uint32_t)(kBaseFreq / current_speed_);
   __HAL_TIM_SET_AUTORELOAD(timer_, period);
   __HAL_TIM_SET_COMPARE(timer_, timer_channel_, period / 2);
