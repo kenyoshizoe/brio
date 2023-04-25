@@ -61,6 +61,12 @@ class A4988 {
    * @brief Reverse origin sensor signal
    */
   void SetSensReverse(bool reverse_sens) { reverse_sens_ = reverse_sens; }
+  /**
+   * @brief Return current angle in rad
+   */
+  float GetAngle() {
+    return step_count_ * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);
+  }
   int64_t GetStepCount() { return step_count_; }
   /**
    * @brief Return stepper is running or not
