@@ -34,7 +34,15 @@ class A4988 {
    */
   void SetInitialSpeed(float initial_speed) {
     initial_speed_ =
-        initial_speed * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
+        Rad2Pulse(std::clamp(initial_speed, 0.0f, (float)max_speed_));
+  }
+  /**
+   * @brief Set default speed
+   * @param default_speed default speed in rad/s
+   */
+  void SetDefaultSpeed(float default_speed) {
+    default_speed_ =
+        Rad2Pulse(std::clamp(default_speed, 0.0f, (float)max_speed_));
   }
   /**
    * @brief Set acceleration
@@ -98,6 +106,7 @@ class A4988 {
   uint16_t motor_steps_ = 400;  // pulse/rev
   uint8_t microstep_ = 1;       // based on ms1 ms2 ms3
   float initial_speed_ = 1600;  // pulse/s
+  float default_speed_ = 6400;  // pulse/s
   float accel_ = 3200;          // pulse/s^2
   int64_t max_step_count_ = 0;  // pulse
   bool reverse_direction_ = false;
