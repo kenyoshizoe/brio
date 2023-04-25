@@ -40,7 +40,7 @@ class A4988 {
    * @brief Set acceleration
    * @param accel acceleration in rad/s^2
    */
-  void SetAccel(float accel) { accel_ = accel; }
+  void SetAccel(float accel) { accel_ = Rad2Pulse(accel); }
   void SetMaxStepCount(int64_t max_step_count) {
     max_step_count_ = max_step_count;
   }
