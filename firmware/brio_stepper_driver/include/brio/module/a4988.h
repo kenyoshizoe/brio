@@ -104,8 +104,13 @@ class A4988 {
   uint8_t gear_ratio_ = 1;
   bool reverse_sens_ = false;
   // State
-  enum class State { kIdle, kAccel, kDecel, kCruise } state_ = State::kIdle;
-  bool rotate_forward_ = false;
+  volatile enum class State {
+    kIdle,
+    kAccel,
+    kDecel,
+    kCruise
+  } state_ = State::kIdle;
+  volatile bool rotate_forward_ = false;
   volatile float max_speed_ = 0;      // pulse/s
   volatile float current_speed_ = 0;  // pulse/s
   volatile int64_t step_count_ = 0;
