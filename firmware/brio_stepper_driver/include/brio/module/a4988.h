@@ -8,10 +8,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 
+#include "brio/util/utils.h"
 #include "main.h"
-
-constexpr double kPI = 3.141592653589793;
 
 namespace brio {
 /**
@@ -34,15 +34,34 @@ class A4988 {
    */
   void SetInitialSpeed(float initial_speed) {
     initial_speed_ =
-        initial_speed * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
+        Rad2Pulse(std::max(initial_speed, 0.0f));
+  }
+  /**
+   * @brief Set default speed
+   * @param default_speed default speed in rad/s
+   */
+  void SetDefaultSpeed(float default_speed) {
+    default_speed_ =
+        Rad2Pulse(std::max(default_speed, 0.0f));
   }
   /**
    * @brief Set acceleration
    * @param accel acceleration in rad/s^2
    */
-  void SetAccel(float accel) { accel_ = accel; }
-  void SetMaxStepCount(int64_t max_step_count) {
-    max_step_count_ = max_step_count;
+  void SetAccel(float accel) { accel_ = Rad2Pulse(accel); }
+  /**
+   * @brief Set min step count
+   * @param min_step_count min step count in pulse
+   */
+  void SetMinRad(float min_rad) {
+    min_step_count_ = std::min((int32_t)Rad2Pulse(min_rad), max_step_count_);
+  }
+  /**
+   * @brief Set max step count
+   * @param max_step_count max step count in pulse
+   */
+  void SetMaxRad(float max_rad) {
+    max_step_count_ = std::max((int32_t)Rad2Pulse(max_rad), min_step_count_);
   }
   /**
    * @brief Reverse direction of rotation
@@ -53,6 +72,12 @@ class A4988 {
    * @brief Reverse origin sensor signal
    */
   void SetSensReverse(bool reverse_sens) { reverse_sens_ = reverse_sens; }
+  /**
+   * @brief Return current angle in rad
+   */
+  float GetAngle() {
+    return step_count_ * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);
+  }
   int64_t GetStepCount() { return step_count_; }
   /**
    * @brief Return stepper is running or not
@@ -65,11 +90,16 @@ class A4988 {
    */
   void ReturnToOrigin();
   /**
+   * @brief Move stepper motor to specified angle
+   * @param rad angle in rad
+   */
+  void MoveTo(float rad, float speed = -1);
+  /**
    * @brief Run stepper motor with const acceleration
    * @param rad angle in rad
    * @param speed max speed in rad/s
    */
-  void Run(float rad, float speed);
+  void Run(float rad, float speed = -1);
   /**
    * @brief Update state of stepper motor
    * @note Call this function in HAL_TIM_PeriodElapsedCallback
@@ -98,18 +128,32 @@ class A4988 {
   uint16_t motor_steps_ = 400;  // pulse/rev
   uint8_t microstep_ = 1;       // based on ms1 ms2 ms3
   float initial_speed_ = 1600;  // pulse/s
+  float default_speed_ = 6400;  // pulse/s
   float accel_ = 3200;          // pulse/s^2
-  int64_t max_step_count_ = 0;  // pulse
+  int32_t max_step_count_ = std::numeric_limits<int32_t>::max();  // pulse
+  int32_t min_step_count_ = std::numeric_limits<int32_t>::min();  // pulse
   bool reverse_direction_ = false;
-  uint8_t gear_ratio_ = 1;
+  float gear_ratio_ = 1;
   bool reverse_sens_ = false;
   // State
-  enum class State { kIdle, kAccel, kDecel, kCruise } state_ = State::kIdle;
-  bool rotate_forward_ = false;
+  volatile enum class State {
+    kIdle,
+    kAccel,
+    kDecel,
+    kCruise
+  } state_ = State::kIdle;
+  volatile bool rotate_forward_ = false;
   volatile float max_speed_ = 0;      // pulse/s
   volatile float current_speed_ = 0;  // pulse/s
-  volatile int64_t step_count_ = 0;
-  volatile int64_t step_count_target_ = 0;
+  volatile int32_t step_count_ = 0;
+  volatile int32_t step_count_target_ = 0;
+
+  float Pulse2Rad(int pulse) {
+    return pulse * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);
+  }
+  float Rad2Pulse(float rad) {
+    return rad * motor_steps_ * microstep_ * gear_ratio_ / 2 / kPI;
+  }
 };
 }  // namespace brio
 #endif  // BRIO_A4988_H_
