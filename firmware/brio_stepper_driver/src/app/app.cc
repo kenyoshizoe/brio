@@ -5,6 +5,7 @@
 
 // C includes
 #include "SEGGER_RTT.h"
+#include "iwdg.h"
 #include "tim.h"
 // C++ includes
 #include "brio/module/a4988.h"
@@ -110,6 +111,7 @@ void MainTask() {
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
   if (htim == &htim6) {
+    HAL_IWDG_Refresh(&hiwdg);
     stepper1->Update();
     stepper2->Update();
     stepper3->Update();
