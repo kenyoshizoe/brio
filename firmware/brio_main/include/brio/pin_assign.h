@@ -1,9 +1,9 @@
-#ifndef BRIO_PIN_ASSIGN_HPP_
-#define BRIO_PIN_ASSIGN_HPP_
+#ifndef BRIO_MAIN_PIN_ASSIGN_H_
+#define BRIO_MAIN_PIN_ASSIGN_H_
 namespace brio {
 namespace pin_assign {
 constexpr int kUartTx1 = 1;
-constexpr int kSpeeker = 2;
+constexpr int kBuzzer = 2;
 constexpr int kUartRx1 = 3;
 constexpr int kEmg = 4;
 constexpr int kStepperDriverCS = 5;
