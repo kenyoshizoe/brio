@@ -1,15 +1,14 @@
 #include <Arduino.h>
 
-#include "brio/pin_assign.hpp"
+#include "brio/pin_assign.h"
+#include "brio/buzzer.h"
+
+brio::Buzzer buzzer(brio::pin_assign::kBuzzer);
 
 void setup() {
   Serial.begin(115200);
   delay(1000);
-  tone(brio::pin_assign::kSpeeker, 3000);
-  delay(200);
-  tone(brio::pin_assign::kSpeeker, 3000);
-  delay(200);
-  noTone(brio::pin_assign::kSpeeker);
+  buzzer.PlayStartUp();
 }
 
 void loop() {}
