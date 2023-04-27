@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" exec="robot_state_publisher" output="screen">
+    <param name="robot_description" type="str" value="$(command '$(find-pkg-prefix xacro)/bin/xacro $(find-pkg-share brio_description)/urdf/brio.urdf.xacro')" />
+  </node>
+  <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" exec="joint_state_publisher_gui" output="screen" />
+</launch>
