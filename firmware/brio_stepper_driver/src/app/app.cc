@@ -12,7 +12,7 @@
 #include "brio/module/a4988.h"
 #include "brio/proto/stepper_driver.h"
 #include "brio/util/utils.h"
-#include "etl/queue.h"
+#include "etl/crc.h"
 
 // Stepper motor
 brio::A4988* stepper1;
@@ -110,12 +110,26 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim) {
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
   SEGGER_RTT_printf(0, "SPI Received: %u, %u\r\n", spi_rx_buffer.bin,
                     spi_rx_buffer.bin);
+  // Check crc
+  etl::crc8_ccitt crc;
+  for (int i = 0; i < sizeof(Main2StepperDriver) - 1; i++) {
+    crc.add(spi_rx_buffer.bin[i]);
+  }
+  if (crc.value() != spi_rx_buffer.bin[sizeof(Main2StepperDriver) - 1]) {
+    SEGGER_RTT_printf(0, "CRC error\r\n");
+    HAL_SPI_TransmitReceive_DMA(
+        &hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin,
+        std::max(sizeof(StepperDriver2Main), sizeof(Main2StepperDriver)));
+    return;
+  }
+  // Process command
   stepper1->MoveTo(spi_rx_buffer.cmd.j1_position, spi_rx_buffer.cmd.j1_velocity,
                    spi_rx_buffer.cmd.j1_acceleration);
   stepper2->MoveTo(spi_rx_buffer.cmd.j2_position, spi_rx_buffer.cmd.j2_velocity,
                    spi_rx_buffer.cmd.j2_acceleration);
   stepper3->MoveTo(spi_rx_buffer.cmd.j3_position, spi_rx_buffer.cmd.j3_velocity,
                    spi_rx_buffer.cmd.j3_acceleration);
+  // Fill status
   spi_tx_buffer.status.j1_position = stepper1->GetAngle();
   spi_tx_buffer.status.j1_velocity = stepper1->GetVelocity();
   spi_tx_buffer.status.j1_acceleration = stepper1->GetAcceleration();
@@ -125,6 +139,12 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
   spi_tx_buffer.status.j3_position = stepper3->GetAngle();
   spi_tx_buffer.status.j3_velocity = stepper3->GetVelocity();
   spi_tx_buffer.status.j3_acceleration = stepper3->GetAcceleration();
+  // Calculate crc
+  crc.reset();
+  for (int i = 0; i < sizeof(StepperDriver2Main) - 1; i++) {
+    crc.add(spi_tx_buffer.bin[i]);
+  }
+  spi_tx_buffer.bin[sizeof(StepperDriver2Main) - 1] = crc.value();
   HAL_SPI_TransmitReceive_DMA(
       &hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin,
       std::max(sizeof(StepperDriver2Main), sizeof(Main2StepperDriver)));

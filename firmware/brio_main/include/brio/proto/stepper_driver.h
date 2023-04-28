@@ -12,8 +12,9 @@ union Main2StepperDriver {
     float j3_position;
     float j3_velocity;
     float j3_acceleration;
+    uint8_t crc;
   } cmd;
-  uint8_t bin[sizeof(float) * 9];
+  uint8_t bin[sizeof(float) * 9 + 1];
 };
 
 union StepperDriver2Main {
@@ -27,7 +28,8 @@ union StepperDriver2Main {
     float j3_position;
     float j3_velocity;
     float j3_acceleration;
+    uint8_t crc;
   } status;
-  uint8_t bin[sizeof(float) * 9];
+  uint8_t bin[sizeof(float) * 9 + 1];
 };
 #endif  // BRIO_MAIN_PROTO_STEPPER_DRIVER_H_
