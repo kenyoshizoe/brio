@@ -1,5 +1,5 @@
-#ifndef BRIO_MAIN_BUZZER_H_
-#define BRIO_MAIN_BUZZER_H_
+#ifndef BRIO_MAIN_MODULE_BUZZER_H_
+#define BRIO_MAIN_MODULE_BUZZER_H_
 
 #include <Arduino.h>
 
@@ -14,4 +14,4 @@ class Buzzer {
 };
 }  // namespace brio
 
-#endif  // BRIO_MAIN_BUZZER_H_
+#endif  // BRIO_MAIN_MODULE_BUZZER_H_

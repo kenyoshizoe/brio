@@ -1,7 +1,7 @@
 #include <Arduino.h>
 
+#include "brio/module/buzzer.h"
 #include "brio/pin_assign.h"
-#include "brio/buzzer.h"
 
 brio::Buzzer buzzer(brio::pin_assign::kBuzzer);
 

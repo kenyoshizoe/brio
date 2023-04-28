@@ -1,4 +1,4 @@
-#include "brio/buzzer.h"
+#include "brio/module/buzzer.h"
 
 namespace brio {
 void Buzzer::PlayStartUp() {
