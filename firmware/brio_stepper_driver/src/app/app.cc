@@ -6,9 +6,11 @@
 // C includes
 #include "SEGGER_RTT.h"
 #include "iwdg.h"
+#include "spi.h"
 #include "tim.h"
 // C++ includes
 #include "brio/module/a4988.h"
+#include "brio/proto/stepper_driver.h"
 #include "brio/util/utils.h"
 #include "etl/queue.h"
 
@@ -16,6 +18,9 @@
 brio::A4988* stepper1;
 brio::A4988* stepper2;
 brio::A4988* stepper3;
+// SPI buffer
+Main2StepperDriver spi_rx_buffer;
+StepperDriver2Main spi_tx_buffer;
 
 void MainTask() {
   // Initialize RTT
@@ -30,7 +35,7 @@ void MainTask() {
   stepper1->SetGearRatio(5);
   stepper1->SetInitialSpeed(0.1 * brio::kPI);
   stepper1->SetDefaultSpeed(1 * brio::kPI);
-  stepper1->SetAccel(0.5 * brio::kPI);
+  stepper1->SetDefaultAccel(0.5 * brio::kPI);
   stepper1->SetMinRad(-2 * brio::kPI);
   stepper1->SetMaxRad(2 * brio::kPI);
   stepper1->SetSensReverse(true);
@@ -40,7 +45,7 @@ void MainTask() {
                              TIM_CHANNEL_1);
   stepper2->SetMicrostep(4);
   stepper2->SetDefaultSpeed(12 * brio::kPI);
-  stepper2->SetAccel(10 * brio::kPI);
+  stepper2->SetDefaultAccel(10 * brio::kPI);
   stepper2->SetMinRad(0);
   stepper2->SetMaxRad(40 * brio::kPI);
   stepper3 = new brio::A4988(STEPPER3_STEP_GPIO_Port, STEPPER3_STEP_Pin,
@@ -52,7 +57,7 @@ void MainTask() {
   stepper3->SetGearRatio(3);
   stepper3->SetInitialSpeed(0.2 * brio::kPI);
   stepper3->SetDefaultSpeed(2 * brio::kPI);
-  stepper3->SetAccel(2 * brio::kPI);
+  stepper3->SetDefaultAccel(2 * brio::kPI);
   stepper3->SetSensReverse(true);
   HAL_GPIO_WritePin(STEPPER_RESET_GPIO_Port, STEPPER_RESET_Pin, GPIO_PIN_RESET);
   HAL_Delay(10);
@@ -64,6 +69,8 @@ void MainTask() {
   HAL_TIM_Base_Start_IT(&htim3);
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim15);
+  // Start SPI
+  HAL_SPI_TransmitReceive_DMA(&hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin, 2);
   // Return to origin
   SEGGER_RTT_printf(0, "Stepper motor 1 return to origin...");
   stepper1->ReturnToOrigin();
@@ -78,69 +85,7 @@ void MainTask() {
 
   HAL_Delay(1000);
 
-  etl::queue<char, 256> cmd_queue;
-  cmd_queue.clear();
-
-  while (true) {
-    int input = SEGGER_RTT_GetKey();
-    if (input < 0) {
-      continue;
-    }
-    if (cmd_queue.full()) {
-      cmd_queue.pop();
-    }
-    cmd_queue.push(input);
-
-    if (cmd_queue.back() == ';') {
-      if (cmd_queue.size() < 3) {
-        cmd_queue.clear();
-        continue;
-      }
-
-      // Parse command
-      char cmd = cmd_queue.front();
-      cmd_queue.pop();
-      char target = cmd_queue.front();
-      cmd_queue.pop();
-      char value_char[16] = "";
-      for (int i = 0; i < cmd_queue.size() - 1; i++) {
-        strcat(value_char, &cmd_queue.front());
-        cmd_queue.pop();
-      }
-      int value = atoi(value_char);
-      cmd_queue.clear();
-
-      SEGGER_RTT_printf(0, "Command: %c, Target: %c, Value: %d\r\n", cmd,
-                        target, value);
-
-      brio::A4988* stepper;
-      if (target == '1') {
-        stepper = stepper1;
-      } else if (target == '2') {
-        stepper = stepper2;
-      } else if (target == '3') {
-        stepper = stepper3;
-      } else {
-        continue;
-      }
-
-      if (cmd == 'm') {
-        // Move to
-        stepper->MoveTo(0.1 * value * brio::kPI);
-      }
-      if (cmd == 's') {
-        // Set speed
-        stepper->SetDefaultSpeed(0.1 * value * brio::kPI);
-      }
-      if (cmd == 'a') {
-        // Acceleration
-        stepper->SetAccel(0.1 * value * brio::kPI);
-      }
-      if (cmd == 'r') {
-        HAL_NVIC_SystemReset();
-      }
-    }
-  }
+  while (true) HAL_Delay(1);
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef* htim) {
@@ -160,4 +105,27 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim) {
   } else if (htim == &htim15) {
     stepper3->PWMPulseFinishedCallback();
   }
+}
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
+  SEGGER_RTT_printf(0, "SPI Received: %u, %u\r\n", spi_rx_buffer.bin,
+                    spi_rx_buffer.bin);
+  stepper1->MoveTo(spi_rx_buffer.cmd.j1_position, spi_rx_buffer.cmd.j1_velocity,
+                   spi_rx_buffer.cmd.j1_acceleration);
+  stepper2->MoveTo(spi_rx_buffer.cmd.j2_position, spi_rx_buffer.cmd.j2_velocity,
+                   spi_rx_buffer.cmd.j2_acceleration);
+  stepper3->MoveTo(spi_rx_buffer.cmd.j3_position, spi_rx_buffer.cmd.j3_velocity,
+                   spi_rx_buffer.cmd.j3_acceleration);
+  spi_tx_buffer.status.j1_position = stepper1->GetAngle();
+  spi_tx_buffer.status.j1_velocity = stepper1->GetVelocity();
+  spi_tx_buffer.status.j1_acceleration = stepper1->GetAcceleration();
+  spi_tx_buffer.status.j2_position = stepper2->GetAngle();
+  spi_tx_buffer.status.j2_velocity = stepper2->GetVelocity();
+  spi_tx_buffer.status.j2_acceleration = stepper2->GetAcceleration();
+  spi_tx_buffer.status.j3_position = stepper3->GetAngle();
+  spi_tx_buffer.status.j3_velocity = stepper3->GetVelocity();
+  spi_tx_buffer.status.j3_acceleration = stepper3->GetAcceleration();
+  HAL_SPI_TransmitReceive_DMA(
+      &hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin,
+      std::max(sizeof(StepperDriver2Main), sizeof(Main2StepperDriver)));
 }

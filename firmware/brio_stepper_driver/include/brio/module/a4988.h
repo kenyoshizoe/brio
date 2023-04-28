@@ -26,36 +26,10 @@ class A4988 {
         uint16_t dir_pin, GPIO_TypeDef *sens_port, uint16_t sens_pin,
         TIM_HandleTypeDef *timer, uint64_t timer_channel);
 
+  // Setters
   void SetMotorSteps(uint16_t motor_steps) { motor_steps_ = motor_steps; }
   void SetMicrostep(uint8_t microstep) { microstep_ = microstep; }
-  /**
-   * @brief Set initial speed
-   * @param initial_speed initial speed in rad/s
-   */
-  void SetInitialSpeed(float initial_speed) {
-    initial_speed_ =
-        Rad2Pulse(std::max(initial_speed, 0.0f));
-  }
-  /**
-   * @brief Set default speed
-   * @param default_speed default speed in rad/s
-   */
-  void SetDefaultSpeed(float default_speed) {
-    default_speed_ =
-        Rad2Pulse(std::max(default_speed, 0.0f));
-  }
-  /**
-   * @brief Set acceleration
-   * @param accel acceleration in rad/s^2
-   */
-  void SetAccel(float accel) { accel_ = Rad2Pulse(accel); }
-  /**
-   * @brief Set min step count
-   * @param min_step_count min step count in pulse
-   */
-  void SetMinRad(float min_rad) {
-    min_step_count_ = std::min((int32_t)Rad2Pulse(min_rad), max_step_count_);
-  }
+  void SetGearRatio(uint8_t gear_ratio) { gear_ratio_ = gear_ratio; }
   /**
    * @brief Set max step count
    * @param max_step_count max step count in pulse
@@ -64,14 +38,45 @@ class A4988 {
     max_step_count_ = std::max((int32_t)Rad2Pulse(max_rad), min_step_count_);
   }
   /**
+   * @brief Set min step count
+   * @param min_step_count min step count in pulse
+   */
+  void SetMinRad(float min_rad) {
+    min_step_count_ = std::min((int32_t)Rad2Pulse(min_rad), max_step_count_);
+  }
+  /**
    * @brief Reverse direction of rotation
    */
   void SetReverse(bool reverse) { reverse_direction_ = reverse; }
-  void SetGearRatio(uint8_t gear_ratio) { gear_ratio_ = gear_ratio; }
+  /**
+   * @brief Set initial speed
+   * @param initial_speed initial speed in rad/s
+   */
+  void SetInitialSpeed(float initial_speed) {
+    initial_speed_ = Rad2Pulse(std::max(initial_speed, 0.0f));
+  }
+  /**
+   * @brief Set default speed
+   * @param default_speed default speed in rad/s
+   */
+  void SetDefaultSpeed(float default_speed) {
+    default_speed_ = Rad2Pulse(std::max(default_speed, 0.0f));
+  }
+  /**
+   * @brief Set acceleration
+   * @param accel acceleration in rad/s^2
+   */
+  void SetDefaultAccel(float accel) { default_accel_ = Rad2Pulse(accel); }
   /**
    * @brief Reverse origin sensor signal
    */
   void SetSensReverse(bool reverse_sens) { reverse_sens_ = reverse_sens; }
+
+  // Getters
+  /**
+   * @brief Return stepper is running or not
+   */
+  bool IsRunning() { return state_ != State::kIdle; }
   /**
    * @brief Return current angle in rad
    */
@@ -80,10 +85,19 @@ class A4988 {
   }
   int64_t GetStepCount() { return step_count_; }
   /**
-   * @brief Return stepper is running or not
+   * @brief Return current Velocity in rad/s
    */
-  bool IsRunning() { return state_ != State::kIdle; }
+  float GetVelocity() {
+    return Pulse2Rad(current_speed_) * (rotate_forward_ ? 1 : -1);
+  }
+  /**
+   * @brief Return current Acceleration in rad/s^2
+   */
+  float GetAcceleration() {
+    return Pulse2Rad(current_accel_) * (rotate_forward_ ? 1 : -1);
+  }
 
+  // Control
   /**
    * @brief Return to origin
    * @note This function is blocking
@@ -93,17 +107,10 @@ class A4988 {
    * @brief Move stepper motor to specified angle
    * @param rad angle in rad
    */
-  void MoveTo(float rad, float speed = -1);
-  /**
-   * @brief Run stepper motor with const acceleration
-   * @param rad angle in rad
-   * @param speed max speed in rad/s
-   */
-  void Run(float rad, float speed = -1);
+  void MoveTo(float rad, float speed = -1, float accel = -1);
   /**
    * @brief Update state of stepper motor
    * @note Call this function in HAL_TIM_PeriodElapsedCallback
-   * @param hz timer frequency in Hz
    */
   void Update();
   /**
@@ -127,13 +134,13 @@ class A4988 {
   // Parameters
   uint16_t motor_steps_ = 400;  // pulse/rev
   uint8_t microstep_ = 1;       // based on ms1 ms2 ms3
-  float initial_speed_ = 1600;  // pulse/s
-  float default_speed_ = 6400;  // pulse/s
-  float accel_ = 3200;          // pulse/s^2
+  float gear_ratio_ = 1;
   int32_t max_step_count_ = std::numeric_limits<int32_t>::max();  // pulse
   int32_t min_step_count_ = std::numeric_limits<int32_t>::min();  // pulse
   bool reverse_direction_ = false;
-  float gear_ratio_ = 1;
+  float initial_speed_ = 1600;  // pulse/s
+  float default_speed_ = 6400;  // pulse/s
+  float default_accel_ = 3200;  // pulse/s^2
   bool reverse_sens_ = false;
   // State
   volatile enum class State {
@@ -143,10 +150,11 @@ class A4988 {
     kCruise
   } state_ = State::kIdle;
   volatile bool rotate_forward_ = false;
-  volatile float max_speed_ = 0;      // pulse/s
-  volatile float current_speed_ = 0;  // pulse/s
   volatile int32_t step_count_ = 0;
   volatile int32_t step_count_target_ = 0;
+  volatile float max_speed_ = 0;      // pulse/s
+  volatile float current_speed_ = 0;  // pulse/s
+  volatile float current_accel_ = 0;  // pulse/s
 
   float Pulse2Rad(int pulse) {
     return pulse * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);

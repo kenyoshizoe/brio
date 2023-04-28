@@ -29,14 +29,18 @@ void A4988::ReturnToOrigin() {
   step_count_ = 0;
 }
 
-void A4988::MoveTo(float rad, float speed) {
-  speed = Rad2Pulse(speed);
-  if (speed < 0) {
-    speed = default_speed_;
-  }
+void A4988::MoveTo(float rad, float speed, float accel) {
   // Stop timer
   HAL_TIM_PWM_Stop(timer_, timer_channel_);
-
+  // Set accel
+  current_accel_ = accel <= 0 ? default_accel_ : Rad2Pulse(accel);
+  // Set speed
+  speed = speed <= 0 ? default_speed_ : Rad2Pulse(speed);
+  max_speed_ = std::min(
+      speed,
+      std::sqrt(std::abs(step_count_target_ - step_count_) * current_accel_ +
+                initial_speed_ * initial_speed_));
+  current_speed_ = initial_speed_;
   // Calculate target step count
   step_count_target_ = Rad2Pulse(rad);
   step_count_target_ =
@@ -44,15 +48,9 @@ void A4988::MoveTo(float rad, float speed) {
   if (step_count_target_ == step_count_) {
     return;
   }
-  // Calculate max speed
-  max_speed_ =
-      std::min(speed,
-               std::sqrt(std::abs(step_count_target_ - step_count_) * accel_ +
-                         initial_speed_ * initial_speed_));
-  // Calculate period
-  current_speed_ = initial_speed_;
-  uint16_t period = (uint32_t)(kBaseFreq / current_speed_);
 
+  // Calculate period
+  uint16_t period = (uint32_t)(kBaseFreq / current_speed_);
   // Set state
   state_ = State::kAccel;
   // Set direction
@@ -73,27 +71,25 @@ void A4988::MoveTo(float rad, float speed) {
   HAL_TIM_PWM_Start_IT(timer_, timer_channel_);
 }
 
-void A4988::Run(float rad, float speed) { MoveTo(GetAngle() + rad, speed); }
-
 void A4988::Update() {
   if (state_ == State::kIdle) {
     return;
   } else if (state_ == State::kAccel) {
-    current_speed_ += accel_ / kUpdateHz;
+    current_speed_ += current_accel_ / kUpdateHz;
     if (current_speed_ > max_speed_) {
       current_speed_ = max_speed_;
       state_ = State::kCruise;
     }
   } else if (state_ == State::kDecel) {
-    current_speed_ -= accel_ / kUpdateHz;
+    current_speed_ -= current_accel_ / kUpdateHz;
     if (current_speed_ < initial_speed_) {
       current_speed_ = initial_speed_;
     }
   } else if (state_ == State::kCruise) {
     current_speed_ = max_speed_;
     if (abs(step_count_target_ - step_count_) <=
-        (max_speed_ * max_speed_ - initial_speed_ * initial_speed_) / accel_ /
-            2) {
+        (max_speed_ * max_speed_ - initial_speed_ * initial_speed_) /
+            current_accel_ / 2) {
       state_ = State::kDecel;
     }
   }
