@@ -18,9 +18,9 @@ void setup() {
   stepper_driver.Init();
   buzzer.PlayStartUp();
 
-  stepper_driver_timer = timerBegin(0, getApbFrequency() / 1000000, true);
+  stepper_driver_timer = timerBegin(0, 80, true);
   timerAttachInterrupt(stepper_driver_timer, &Communicate, true);
-  timerAlarmWrite(stepper_driver_timer, 1000, true);
+  timerAlarmWrite(stepper_driver_timer, 1000000, true);
   timerAlarmEnable(stepper_driver_timer);
 }
 

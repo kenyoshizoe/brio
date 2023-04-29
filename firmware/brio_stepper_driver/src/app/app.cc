@@ -108,20 +108,6 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef* htim) {
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
-  SEGGER_RTT_printf(0, "SPI Received: %u, %u\r\n", spi_rx_buffer.bin,
-                    spi_rx_buffer.bin);
-  // Check crc
-  etl::crc8_ccitt crc;
-  for (int i = 0; i < sizeof(Main2StepperDriver) - 1; i++) {
-    crc.add(spi_rx_buffer.bin[i]);
-  }
-  if (crc.value() != spi_rx_buffer.bin[sizeof(Main2StepperDriver) - 1]) {
-    SEGGER_RTT_printf(0, "CRC error\r\n");
-    HAL_SPI_TransmitReceive_DMA(
-        &hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin,
-        std::max(sizeof(StepperDriver2Main), sizeof(Main2StepperDriver)));
-    return;
-  }
   // Process command
   stepper1->MoveTo(spi_rx_buffer.cmd.j1_position, spi_rx_buffer.cmd.j1_velocity,
                    spi_rx_buffer.cmd.j1_acceleration);
@@ -139,13 +125,5 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef* hspi) {
   spi_tx_buffer.status.j3_position = stepper3->GetAngle();
   spi_tx_buffer.status.j3_velocity = stepper3->GetVelocity();
   spi_tx_buffer.status.j3_acceleration = stepper3->GetAcceleration();
-  // Calculate crc
-  crc.reset();
-  for (int i = 0; i < sizeof(StepperDriver2Main) - 1; i++) {
-    crc.add(spi_tx_buffer.bin[i]);
-  }
-  spi_tx_buffer.bin[sizeof(StepperDriver2Main) - 1] = crc.value();
-  HAL_SPI_TransmitReceive_DMA(
-      &hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin,
-      std::max(sizeof(StepperDriver2Main), sizeof(Main2StepperDriver)));
+  HAL_SPI_TransmitReceive_DMA(&hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin, 36);
 }
