@@ -9,14 +9,17 @@
 namespace brio {
 class StepperDriver {
  public:
-  StepperDriver(SPIClass* spi) : spi_(spi) {}
+  StepperDriver(SPIClass* spi) : spi_(spi) {
+    for (int i = 0; i < sizeof(Main2StepperDriver); i++) tx_.bin[0] = 0;
+    for (int i = 0; i < sizeof(StepperDriver2Main); i++) rx_.bin[0] = 0;
+  }
   void Init();
   void Communicate();
-  void Write(const StepperDriver2Main& msg) { rx_ = msg; }
-  Main2StepperDriver Read() { return tx_; }
+  void Write(const Main2StepperDriver& msg) { tx_ = msg; }
+  StepperDriver2Main Read() { return rx_; }
 
  private:
-  const uint32_t kSpiFrequency = 4000000;
+  const uint32_t kSpiFrequency = 20000;
   SPIClass* spi_;
   Main2StepperDriver tx_;
   StepperDriver2Main rx_;
