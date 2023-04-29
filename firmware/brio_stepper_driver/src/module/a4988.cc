@@ -30,29 +30,41 @@ void A4988::ReturnToOrigin() {
 }
 
 void A4988::MoveTo(float rad, float speed, float accel) {
-  // Stop timer
-  HAL_TIM_PWM_Stop(timer_, timer_channel_);
+  // Calculate target step count
+  uint32_t new_step_count_target =
+      std::clamp((int32_t)Rad2Pulse(rad), min_step_count_, max_step_count_);
+  if ((uint32_t)step_count_target_ == new_step_count_target) {
+    return;
+  } else {
+    step_count_target_ = new_step_count_target;
+  }
+  SEGGER_RTT_printf(0, "step_count_target_: %d\n", step_count_target_);
   // Set accel
   current_accel_ = accel <= 0 ? default_accel_ : Rad2Pulse(accel);
   // Set speed
-  speed = speed <= 0 ? default_speed_ : Rad2Pulse(speed);
-  max_speed_ = std::min(
-      speed,
-      std::sqrt(std::abs(step_count_target_ - step_count_) * current_accel_ +
+  speed = speed == 0 ? default_speed_ : std::abs(Rad2Pulse(speed));
+  target_velocity_ = std::min(
+      std::abs(speed),
+      std::sqrt(abs(step_count_target_ - step_count_) * current_accel_ +
                 initial_speed_ * initial_speed_));
-  current_speed_ = initial_speed_;
-  // Calculate target step count
-  step_count_target_ = Rad2Pulse(rad);
-  step_count_target_ =
-      std::clamp((int32_t)step_count_target_, min_step_count_, max_step_count_);
-  if (step_count_target_ == step_count_) {
+  target_velocity_ *= step_count_ < step_count_target_ ? 1 : -1;
+
+  if (step_count_ < step_count_target_) {
+    if (0 <= current_velocity_ && current_velocity_ < target_velocity_) {
+      current_velocity_ = initial_speed_;
+    }
+    state_ = State::kAccel;
+  } else if (step_count_ > step_count_target_) {
+    if (0 >= current_velocity_ && current_velocity_ > target_velocity_) {
+      current_velocity_ = -initial_speed_;
+    }
+    state_ = State::kDecel;
+  } else {
     return;
   }
 
   // Calculate period
-  uint16_t period = (uint32_t)(kBaseFreq / current_speed_);
-  // Set state
-  state_ = State::kAccel;
+  uint16_t period = (uint32_t)(kBaseFreq / std::abs(current_velocity_));
   // Set direction
   if (step_count_target_ - step_count_ > 0.0f) {
     HAL_GPIO_WritePin(dir_port_, dir_pin_,
@@ -73,27 +85,36 @@ void A4988::MoveTo(float rad, float speed, float accel) {
 
 void A4988::Update() {
   if (state_ == State::kIdle) {
+    current_velocity_ = 0;
     return;
   } else if (state_ == State::kAccel) {
-    current_speed_ += current_accel_ / kUpdateHz;
-    if (current_speed_ > max_speed_) {
-      current_speed_ = max_speed_;
+    current_velocity_ += current_accel_ / kUpdateHz;
+    if (current_velocity_ > target_velocity_) {
+      current_velocity_ = target_velocity_;
       state_ = State::kCruise;
     }
   } else if (state_ == State::kDecel) {
-    current_speed_ -= current_accel_ / kUpdateHz;
-    if (current_speed_ < initial_speed_) {
-      current_speed_ = initial_speed_;
+    current_velocity_ -= current_accel_ / kUpdateHz;
+    if (current_velocity_ < target_velocity_) {
+      current_velocity_ = target_velocity_;
+      state_ = State::kCruise;
     }
   } else if (state_ == State::kCruise) {
-    current_speed_ = max_speed_;
-    if (abs(step_count_target_ - step_count_) <=
-        (max_speed_ * max_speed_ - initial_speed_ * initial_speed_) /
+    current_velocity_ = target_velocity_;
+    if (std::abs(step_count_target_ - step_count_) <=
+        (target_velocity_ * target_velocity_ -
+         initial_speed_ * initial_speed_) /
             current_accel_ / 2) {
-      state_ = State::kDecel;
+      target_velocity_ =
+          current_velocity_ > 0 ? initial_speed_ : -initial_speed_;
+      if (target_velocity_ > current_velocity_) {
+        state_ = State::kAccel;
+      } else if (target_velocity_ < current_velocity_) {
+        state_ = State::kDecel;
+      }
     }
   }
-  uint32_t period = (uint32_t)(kBaseFreq / current_speed_);
+  uint32_t period = (uint32_t)(kBaseFreq / std::abs(current_velocity_));
   __HAL_TIM_SET_AUTORELOAD(timer_, period);
   __HAL_TIM_SET_COMPARE(timer_, timer_channel_, period / 2);
 }
@@ -109,6 +130,8 @@ void A4988::PWMPulseFinishedCallback() {
   if (step_count_ == step_count_target_) {
     HAL_TIM_PWM_Stop(timer_, timer_channel_);
     HAL_GPIO_WritePin(step_port_, step_pin_, GPIO_PIN_RESET);
+    current_velocity_ = 0;
+    target_velocity_ = 0;
     state_ = State::kIdle;
 
     SEGGER_RTT_printf(0, "step count reached target: %d\n", step_count_);

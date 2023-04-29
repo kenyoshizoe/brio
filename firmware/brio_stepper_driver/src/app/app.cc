@@ -44,6 +44,7 @@ void MainTask() {
                              STEPPER2_SENS_GPIO_Port, STEPPER2_SENS_Pin, &htim2,
                              TIM_CHANNEL_1);
   stepper2->SetMicrostep(4);
+  stepper2->SetInitialSpeed(4 * brio::kPI);
   stepper2->SetDefaultSpeed(12 * brio::kPI);
   stepper2->SetDefaultAccel(10 * brio::kPI);
   stepper2->SetMinRad(0);
@@ -69,8 +70,6 @@ void MainTask() {
   HAL_TIM_Base_Start_IT(&htim3);
   HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim15);
-  // Start SPI
-  HAL_SPI_TransmitReceive_DMA(&hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin, 2);
   // Return to origin
   SEGGER_RTT_printf(0, "Stepper motor 1 return to origin...");
   stepper1->ReturnToOrigin();
@@ -82,6 +81,9 @@ void MainTask() {
   stepper3->ReturnToOrigin();
   SEGGER_RTT_printf(0, "done.\r\n");
   SEGGER_RTT_printf(0, "Stepper motor driver initialized.\r\n");
+
+  // Start SPI
+  HAL_SPI_TransmitReceive_DMA(&hspi1, spi_tx_buffer.bin, spi_rx_buffer.bin, 36);
 
   HAL_Delay(1000);
 

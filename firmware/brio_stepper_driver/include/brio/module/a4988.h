@@ -87,9 +87,7 @@ class A4988 {
   /**
    * @brief Return current Velocity in rad/s
    */
-  float GetVelocity() {
-    return Pulse2Rad(current_speed_) * (rotate_forward_ ? 1 : -1);
-  }
+  float GetVelocity() { return Pulse2Rad(current_velocity_); }
   /**
    * @brief Return current Acceleration in rad/s^2
    */
@@ -152,9 +150,9 @@ class A4988 {
   volatile bool rotate_forward_ = false;
   volatile int32_t step_count_ = 0;
   volatile int32_t step_count_target_ = 0;
-  volatile float max_speed_ = 0;      // pulse/s
-  volatile float current_speed_ = 0;  // pulse/s
-  volatile float current_accel_ = 0;  // pulse/s
+  volatile float target_velocity_ = 0;   // pulse/s
+  volatile float current_velocity_ = 0;  // pulse/s
+  volatile float current_accel_ = 0;     // pulse/s
 
   float Pulse2Rad(int pulse) {
     return pulse * 2 * kPI / (motor_steps_ * microstep_ * gear_ratio_);
