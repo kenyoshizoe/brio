@@ -45,12 +45,19 @@ BrioDriver::BrioDriver() : Node("brio_driver") {
   joint_states_pub_ =
       this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   poll_thread_ = std::thread([&]() { this->Poll(); });
+BrioDriver::~BrioDriver() {
+  is_running_ = false;
+  poll_thread_.join();
+  close(fd_);
 }
 
 void BrioDriver::Poll() {
   std::queue<uint8_t> rx_queue_;
   while (true) {
     std::this_thread::yield();
+    if (!is_running_) {
+      break;
+    }
     uint8_t buf[256];
     size_t size = 0;
     {

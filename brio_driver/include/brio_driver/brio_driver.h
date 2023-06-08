@@ -7,6 +7,7 @@
 class BrioDriver : public rclcpp::Node {
  public:
   BrioDriver();
+  ~BrioDriver();
   void Poll();
 
  private:
@@ -14,4 +15,5 @@ class BrioDriver : public rclcpp::Node {
   std::mutex fd_mutex_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_states_pub_;
   std::thread poll_thread_;
+  bool is_running_ = true;
 };
