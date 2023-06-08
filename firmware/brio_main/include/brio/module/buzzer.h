@@ -8,6 +8,7 @@ class Buzzer {
  public:
   Buzzer(int pin) : pin_(pin){};
   void PlayStartUp();
+  void Play(int freq);
 
  private:
   int pin_;

@@ -8,4 +8,5 @@ void Buzzer::PlayStartUp() {
   delay(200);
   noTone(pin_);
 }
+void Buzzer::Play(int freq) { tone(pin_, freq); }
 }  // namespace brio
