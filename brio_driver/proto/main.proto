@@ -1,0 +1,28 @@
+syntax = "proto3";
+package brio;
+
+message RGB {
+    uint32 red = 1;
+    uint32 green = 2;
+    uint32 blue = 3;
+}
+
+message JointState {
+    float position = 1;
+    float velocity = 2;
+    float acceleration = 3;
+}
+
+message PC2Robot {
+    JointState j1 = 1;
+    JointState j2 = 2;
+    JointState j3 = 3;
+    uint64 buzzer_freq = 4;
+    RGB led_color = 5;
+}
+
+message Robot2PC {
+    JointState j1 = 1;
+    JointState j2 = 2;
+    JointState j3 = 3;
+}
