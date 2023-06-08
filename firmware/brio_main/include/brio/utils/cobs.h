@@ -75,7 +75,7 @@ class COBS {
   static etl::vector<uint8_t, N> Encode(etl::vector<uint8_t, N> buffer) {
     auto encodedBuffer =
         etl::vector<uint8_t, N>(GetEncodedBufferSize(buffer.size()));
-    encode(buffer.data(), buffer.size(), encodedBuffer.data());
+    Encode(buffer.data(), buffer.size(), encodedBuffer.data());
     return encodedBuffer;
   }
 
@@ -116,7 +116,7 @@ class COBS {
   template <size_t N>
   static etl::vector<uint8_t, N> Decode(etl::vector<uint8_t, N> buffer) {
     auto decodedBuffer = etl::vector<uint8_t, N>(buffer.size());
-    size_t size = decode(buffer.data(), buffer.size(), decodedBuffer.data());
+    size_t size = Decode(buffer.data(), buffer.size(), decodedBuffer.data());
     decodedBuffer.resize(size);
     return decodedBuffer;
   }
