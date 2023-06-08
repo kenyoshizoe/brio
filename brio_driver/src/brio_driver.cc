@@ -10,7 +10,6 @@
 #include <string>
 
 #include "brio_driver/utils/cobs.h"
-#include "main.pb.h"
 
 BrioDriver::BrioDriver() : Node("brio_driver") {
   // Declare parameters.
@@ -45,6 +44,8 @@ BrioDriver::BrioDriver() : Node("brio_driver") {
   joint_states_pub_ =
       this->create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
   poll_thread_ = std::thread([&]() { this->Poll(); });
+}
+
 BrioDriver::~BrioDriver() {
   is_running_ = false;
   poll_thread_.join();
@@ -104,9 +105,11 @@ void BrioDriver::Poll() {
       sensor_msgs::msg::JointState joint_states_msg;
       joint_states_msg.header.stamp = this->now();
       joint_states_msg.name = {"link_2_joint", "link_3_joint", "link_4_joint"};
-      joint_states_msg.position = {msg.j1().position(), msg.j2().position(),
+      joint_states_msg.position = {-msg.j1().position(),
+                                   msg.j2().position() / 1000,
                                    msg.j3().position()};
-      joint_states_msg.velocity = {msg.j1().velocity(), msg.j2().velocity(),
+      joint_states_msg.velocity = {-msg.j1().velocity(),
+                                   msg.j2().velocity() / 1000,
                                    msg.j3().velocity()};
       joint_states_pub_->publish(joint_states_msg);
     }
