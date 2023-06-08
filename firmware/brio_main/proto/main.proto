@@ -1,4 +1,5 @@
 syntax = "proto3";
+package brio;
 
 message RGB {
     uint32 red = 1;
