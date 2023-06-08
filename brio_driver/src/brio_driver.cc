@@ -112,3 +112,22 @@ void BrioDriver::Poll() {
     }
   }
 }
+
+void BrioDriver::Send(brio::PC2Robot msg) {
+  // Serialize message
+  std::string msg_str = msg.SerializeAsString();
+  // Calculate checksum
+  uint8_t checksum = 0;
+  for (size_t i = 0; i < msg_str.size(); i++) {
+    checksum += msg_str[i];
+  }
+  std::vector<uint8_t> tx_buf(msg_str.begin(), msg_str.end());
+  tx_buf.push_back(checksum);
+  // COBS encode
+  tx_buf = brio::COBS::Encode(tx_buf);
+  // Send
+  {
+    std::unique_lock<std::mutex> lock(fd_mutex_);
+    ::write(fd_, tx_buf.data(), tx_buf.size());
+  }
+}
