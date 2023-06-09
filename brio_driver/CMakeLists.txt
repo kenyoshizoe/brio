@@ -14,6 +14,7 @@ find_package(Threads REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Protobuf REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(brio_msgs REQUIRED)
 
 # add_subdirectory(proto)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -58,7 +59,7 @@ target_include_directories(brio_driver_node PUBLIC
 target_link_libraries(brio_driver_node
   ${PROJECT_NAME}
 )
-ament_target_dependencies(brio_driver rclcpp sensor_msgs)
+ament_target_dependencies(brio_driver rclcpp sensor_msgs brio_msgs)
 
 install(TARGETS
   ${PROJECT_NAME}
