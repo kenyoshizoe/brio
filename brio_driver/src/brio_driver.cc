@@ -17,28 +17,11 @@ BrioDriver::BrioDriver() : Node("brio_driver") {
   // Get parameters for serial port.
   std::string device_name =
       this->get_parameter("device_name").as_string();  // Open serial port.
-  fd_ = open(device_name.c_str(), O_RDWR);
-  if (fd_ < 0) {
+  if (!OpenPort(device_name)) {
     RCLCPP_ERROR(this->get_logger(), "Failed to open serial port.");
+    exit(1);
     return;
   }
-  // Configure serial port.
-  struct termios tio;
-  tcgetattr(fd_, &tio);
-  cfsetispeed(&tio, B115200);
-  cfsetospeed(&tio, B115200);
-  cfmakeraw(&tio);
-  tio.c_iflag = 0;
-  tio.c_oflag = 0;
-  tio.c_cflag |= CREAD;    // 受信有効
-  tio.c_cflag |= CLOCAL;   // ローカルライン（モデム制御なし）
-  tio.c_cflag |= CS8;      // データビット:8bit
-  tio.c_lflag &= ~ICANON;  // 非カノニカルモード
-  tio.c_lflag &= ~ECHO;    // エコー無効
-  tio.c_cc[VMIN] = 0;
-  tio.c_cc[VTIME] = 0;
-  tcsetattr(fd_, TCSANOW, &tio);
-
   RCLCPP_INFO(this->get_logger(), "Opened serial port.");
 
   joint_states_pub_ =
@@ -133,4 +116,28 @@ void BrioDriver::Send(brio::PC2Robot msg) {
     std::unique_lock<std::mutex> lock(fd_mutex_);
     ::write(fd_, tx_buf.data(), tx_buf.size());
   }
+}
+
+bool BrioDriver::OpenPort(std::string device) {
+  fd_ = open(device.c_str(), O_RDWR);
+  if (fd_ < 0) {
+    return false;
+  }
+  // Configure serial port.
+  struct termios tio;
+  tcgetattr(fd_, &tio);
+  cfsetispeed(&tio, B115200);
+  cfsetospeed(&tio, B115200);
+  cfmakeraw(&tio);
+  tio.c_iflag = 0;
+  tio.c_oflag = 0;
+  tio.c_cflag |= CREAD;    // 受信有効
+  tio.c_cflag |= CLOCAL;   // ローカルライン（モデム制御なし）
+  tio.c_cflag |= CS8;      // データビット:8bit
+  tio.c_lflag &= ~ICANON;  // 非カノニカルモード
+  tio.c_lflag &= ~ECHO;    // エコー無効
+  tio.c_cc[VMIN] = 0;
+  tio.c_cc[VTIME] = 0;
+  tcsetattr(fd_, TCSANOW, &tio);
+  return true;
 }

@@ -13,6 +13,8 @@ class BrioDriver : public rclcpp::Node {
   void Send(brio::PC2Robot msg);
 
  private:
+  bool OpenPort(std::string device);
+
   int fd_;
   std::mutex fd_mutex_;
   rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr joint_states_pub_;
