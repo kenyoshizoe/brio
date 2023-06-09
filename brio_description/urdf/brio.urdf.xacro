@@ -72,4 +72,11 @@
             </material>
         </visual>
     </link>
+    <joint name="tip_link_joint" type="fixed">
+        <origin xyz="0.2 0 0" rpy="0 0 0"/>
+        <parent link="link_4" />
+        <child link="tip_link" />
+    </joint>
+    <link name="tip_link">
+    </link>
 </robot>
